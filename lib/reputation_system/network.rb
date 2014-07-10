@@ -157,7 +157,17 @@ module ReputationSystem
         def get_scoped_reputation_name_from_source_def_and_target(source_def, target)
           scope = target.evaluate_reputation_scope(source_def[:scope]) if source_def[:scope]
           of = target.get_attributes_of(source_def)
-          class_name = (of.is_a?(Array) ? of[0] : of).class.name
+
+          association_class = if of.is_a?(Array) && of.length > 0
+            of.first.class
+          elsif !of || (of.is_a?(Array) && of.empty?)
+            target.class.reflections[source_def[:of]].klass
+          else
+            of.class
+          end
+
+          class_name = association_class.name
+
           get_scoped_reputation_name(class_name, source_def[:reputation], scope)
         end
 
